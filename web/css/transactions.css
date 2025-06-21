@@ -1,0 +1,403 @@
+/* 📋 עיצוב דף עסקאות */
+
+/* 🔍 פילטרים */
+.filters-container {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.filters-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 15px;
+  align-items: center;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #e1e5e9;
+  border-radius: 25px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.search-box input:focus {
+  border-color: #667eea;
+}
+
+.filter-selects {
+  display: flex;
+  gap: 10px;
+}
+
+.filter-selects select,
+.date-filters input {
+  padding: 10px 15px;
+  border: 2px solid #e1e5e9;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  outline: none;
+  background: white;
+  min-width: 120px;
+}
+
+.date-filters {
+  display: flex;
+  gap: 10px;
+}
+
+.clear-btn {
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.clear-btn:hover {
+  background: #ff5252;
+  transform: translateY(-1px);
+}
+
+/* 📊 סיכום מהיר */
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.summary-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.summary-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #667eea;
+  margin-bottom: 5px;
+}
+
+.summary-label {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* 📋 טבלת עסקאות */
+.transactions-container {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.table-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.export-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 15px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.export-btn:hover {
+  background: #218838;
+  transform: translateY(-1px);
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: 10px;
+  border: 1px solid #e1e5e9;
+}
+
+#transactions-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+#transactions-table th {
+  background: #f8f9fa;
+  padding: 15px 10px;
+  text-align: right;
+  font-weight: bold;
+  border-bottom: 2px solid #e1e5e9;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  position: relative;
+}
+
+#transactions-table th:hover {
+  background: #e9ecef;
+}
+
+#transactions-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #f1f3f4;
+  vertical-align: middle;
+}
+
+#transactions-table tr:hover {
+  background: #f8f9fa;
+}
+
+.sort-arrow {
+  margin-right: 5px;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.sort-arrow.asc::after {
+  content: "▲";
+  color: #667eea;
+}
+
+.sort-arrow.desc::after {
+  content: "▼";
+  color: #667eea;
+}
+
+/* 🏷️ תגית קטגוריה */
+.category-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+}
+
+/* 💳 תגית חברה */
+.company-tag {
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: white;
+}
+
+.company-דיינרס {
+  background: #007bff;
+}
+.company-ישראכרט {
+  background: #28a745;
+}
+.company-כאל {
+  background: #ffc107;
+  color: #333;
+}
+.company-ויזה {
+  background: #6f42c1;
+}
+
+/* ⚙️ כפתורי פעולות */
+.action-btn {
+  background: #17a2b8;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  margin: 0 2px;
+  transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+  background: #138496;
+  transform: translateY(-1px);
+}
+
+/* 📄 ניווט דפים */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 15px 0;
+}
+
+.pagination button {
+  background: white;
+  border: 2px solid #e1e5e9;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pagination button:hover {
+  background: #f8f9fa;
+  border-color: #667eea;
+}
+
+.pagination button.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 🛠️ מודל עריכה */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 15px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #e1e5e9;
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-body label {
+  display: block;
+  margin: 15px 0 5px 0;
+  font-weight: bold;
+}
+
+.modal-body select {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 20px;
+  border-top: 1px solid #e1e5e9;
+}
+
+.save-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.cancel-btn {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* 📱 Responsive */
+@media (max-width: 768px) {
+  .filters-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .filter-selects,
+  .date-filters {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .filter-selects select,
+  .date-filters input {
+    width: 100%;
+  }
+
+  .summary-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .table-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .table-controls {
+    justify-content: space-between;
+  }
+
+  #transactions-table {
+    font-size: 0.8rem;
+  }
+
+  #transactions-table th,
+  #transactions-table td {
+    padding: 8px 5px;
+  }
+}

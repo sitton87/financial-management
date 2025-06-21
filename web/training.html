@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🧠 אימון ראשוני - ניהול פיננסי</title>
+
+    <!-- External Scripts -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+    <!-- Our Styles and Scripts -->
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/training.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- 🔐 מסך התחברות -->
+      <div id="login-screen" style="display: none">
+        <div class="login-container">
+          <h1>💳 ניהול פיננסי</h1>
+          <p style="margin: 20px 0; color: #666">התחבר כדי לגשת למערכת</p>
+          <button id="login-btn" class="login-btn">
+            <span>🔐</span>
+            התחבר עם Google
+          </button>
+        </div>
+      </div>
+
+      <!-- ❌ מסך גישה נדחתה -->
+      <div id="access-denied" style="display: none">
+        <div class="login-container">
+          <h1>❌ גישה נדחתה</h1>
+          <p style="margin: 20px 0; color: #dc3545">
+            אין לך הרשאה לגשת למערכת.<br />
+            פנה למנהל המערכת.
+          </p>
+          <button id="logout-btn-denied" class="logout-btn">התנתק</button>
+        </div>
+      </div>
+
+      <!-- 🧠 המערכת הראשית -->
+      <div id="main-app" style="display: none">
+        <!-- הכותרת תתמלא ב-JavaScript -->
+        <div id="header-container"></div>
+
+        <div id="loading" class="loading">
+          <h3>🧠 טוען נתוני אימון...</h3>
+        </div>
+
+        <div id="error-message" class="error" style="display: none"></div>
+
+        <div id="training-content" style="display: none">
+          <!-- 📊 התקדמות אימון -->
+          <div class="training-progress">
+            <h2>🧠 אימון ראשוני של מערכת AI</h2>
+            <p>אשר את כל העסקים כדי שה-AI ילמד את העדפותיך</p>
+
+            <div class="progress-container">
+              <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+              </div>
+              <div class="progress-text">
+                <span id="progress-current">0</span> /
+                <span id="progress-total">0</span> עסקים אושרו (<span
+                  id="progress-percent"
+                  >0%</span
+                >)
+              </div>
+            </div>
+          </div>
+
+          <!-- 🔍 פילטרים וחיפוש -->
+          <div class="training-filters">
+            <div class="filters-row">
+              <div class="filter-group">
+                <label>🔍 חיפוש עסק:</label>
+                <input
+                  type="text"
+                  id="search-business"
+                  placeholder="הקלד שם עסק..."
+                />
+              </div>
+
+              <div class="filter-group">
+                <label>📂 קטגוריה:</label>
+                <select id="filter-category">
+                  <option value="">כל הקטגוריות</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label>📊 מיון:</label>
+                <select id="sort-by">
+                  <option value="transaction_count">לפי כמות עסקאות</option>
+                  <option value="total_amount">לפי סכום כולל</option>
+                  <option value="business_name">לפי שם עסק</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label>👁️ הצג:</label>
+                <select id="show-filter">
+                  <option value="all">הכל</option>
+                  <option value="pending">טרם אושרו</option>
+                  <option value="approved">אושרו</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- 📋 טבלת עסקים -->
+          <div class="training-table-container">
+            <div class="table-header">
+              <h3>📋 רשימת עסקים לאימון</h3>
+              <div class="bulk-actions">
+                <button id="approve-all-visible" class="bulk-btn">
+                  ✅ אשר את כל הגלויים
+                </button>
+                <button
+                  id="complete-training"
+                  class="complete-btn"
+                  style="display: none"
+                >
+                  🎉 סיים אימון
+                </button>
+              </div>
+            </div>
+
+            <div class="training-table-wrapper">
+              <table class="training-table">
+                <thead>
+                  <tr>
+                    <th>🏪 שם עסק</th>
+                    <th>📂 קטגוריה נוכחית</th>
+                    <th>💳 חברה</th>
+                    <th>📊 עסקאות</th>
+                    <th>💰 סכום כולל</th>
+                    <th>📈 ממוצע</th>
+                    <th>⚙️ פעולות</th>
+                  </tr>
+                </thead>
+                <tbody id="training-tbody">
+                  <!-- הנתונים יתמלאו ב-JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 🎉 הודעת סיום -->
+          <div
+            id="completion-message"
+            class="completion-message"
+            style="display: none"
+          >
+            <h2>🎉 אימון הושלם בהצלחה!</h2>
+            <p>כל העסקים אושרו. ה-AI מוכן לשימוש!</p>
+            <button
+              onclick="window.location.href='ai-insights.html'"
+              class="return-btn"
+            >
+              🧠 חזור לתובנות AI
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🛠️ מודל עריכת קטגוריה -->
+    <div id="edit-modal" class="modal" style="display: none">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>✏️ עריכת קטגוריה</h3>
+          <button class="close-modal" onclick="closeEditModal()">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+            <p>עסק: <strong id="edit-business-name"></strong></p>
+            <p>עסקאות: <strong id="edit-transaction-count"></strong></p>
+            <p>סכום כולל: <strong id="edit-total-amount"></strong></p>
+            
+            <label for="edit-category-select">קטגוריה:</label>
+            <div style="display: flex; gap: 10px; align-items: end;">
+                <select id="edit-category-select" style="flex: 1;">
+                <!-- אפשרויות יתמלאו ב-JavaScript -->
+                </select>
+                <button type="button" id="add-new-category" class="add-category-btn">
+                ➕ הוסף חדשה
+                </button>
+            </div>
+            
+            <!-- שדה קטגוריה חדשה -->
+            <div id="new-category-section" style="display: none; margin-top: 15px;">
+                <label for="new-category-name">שם קטגוריה חדשה:</label>
+                <input type="text" id="new-category-name" placeholder="הקלד שם קטגוריה..." maxlength="50">
+                <div style="margin-top: 10px; display: flex; gap: 10px; align-items: center;">
+                <div style="flex: 1;">
+                    <label for="new-category-color">צבע:</label>
+                    <input type="color" id="new-category-color" value="#667eea">
+                </div>
+                <div style="flex: 1;">
+                    <label for="new-category-icon">סמל:</label>
+                    <select id="new-category-icon">
+                    <option value="📂">📂 תיקייה</option>
+                    <option value="🍔">🍔 אוכל</option>
+                    <option value="🚗">🚗 תחבורה</option>
+                    <option value="🎮">🎮 בילוי</option>
+                    <option value="🏥">🏥 בריאות</option>
+                    <option value="🏠">🏠 בית</option>
+                    <option value="💼">💼 עבודה</option>
+                    <option value="🎓">🎓 חינוך</option>
+                    <option value="💰">💰 כסף</option>
+                    <option value="🔧">🔧 שירותים</option>
+                    </select>
+                </div>
+                </div>
+                <div style="margin-top: 10px;">
+                <button type="button" id="save-new-category" class="save-new-btn">
+                    💾 צור קטגוריה
+                </button>
+                <button type="button" id="cancel-new-category" class="cancel-new-btn">
+                    ❌ ביטול
+                </button>
+                </div>
+            </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button id="save-category" class="save-btn">💾 שמור ואשר</button>
+          <button onclick="closeEditModal()" class="cancel-btn">
+            ❌ ביטול
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Our Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/training.js"></script>
+  </body>
+</html>

@@ -1,0 +1,515 @@
+/* 🧠 דף אימון ראשוני - עיצוב מקצועי */
+
+/* התקדמות אימון */
+.training-progress {
+  background: linear-gradient(135deg, #667eea 0%, #8ec3ff 100%);
+  color: white;
+  padding: 30px;
+  border-radius: 15px;
+  margin-bottom: 30px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+}
+
+.training-progress h2 {
+  margin: 0 0 10px 0;
+  font-size: 2rem;
+}
+
+.training-progress p {
+  margin: 0 0 25px 0;
+  opacity: 0.9;
+  font-size: 1.1rem;
+}
+
+.progress-container {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.progress-bar {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 25px;
+  height: 20px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progress-fill {
+  background: linear-gradient(90deg, #28a745, #20c997);
+  height: 100%;
+  border-radius: 25px;
+  transition: width 0.3s ease;
+  width: 0%;
+}
+
+.progress-text {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+/* פילטרים */
+.training-filters {
+  background: white;
+  border-radius: 15px;
+  padding: 25px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.filters-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  align-items: end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.filter-group label {
+  font-weight: bold;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.filter-group input,
+.filter-group select {
+  padding: 10px;
+  border: 2px solid #e1e5ff;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  transition: border-color 0.3s ease;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+/* טבלת אימון */
+.training-table-container {
+  background: white;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.table-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.bulk-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bulk-btn,
+.complete-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.bulk-btn {
+  background: #28a745;
+  color: white;
+}
+
+.bulk-btn:hover {
+  background: #218838;
+  transform: translateY(-1px);
+}
+
+.complete-btn {
+  background: linear-gradient(135deg, #ff6b6b, #ffa726);
+  color: white;
+  font-size: 1.1rem;
+  animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+  0% {
+    box-shadow: 0 0 5px rgba(255, 107, 107, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 107, 107, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 5px rgba(255, 107, 107, 0.5);
+  }
+}
+
+.training-table-wrapper {
+  overflow-x: auto;
+}
+
+.training-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.training-table th {
+  background: #f8f9ff;
+  color: #333;
+  font-weight: bold;
+  padding: 15px 10px;
+  text-align: right;
+  border-bottom: 2px solid #e1e5ff;
+  white-space: nowrap;
+}
+
+.training-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: middle;
+}
+
+.training-table tr:hover {
+  background: #f8f9ff;
+}
+
+.training-table tr.approved {
+  background: #f0fff4;
+}
+
+.training-table tr.approved td {
+  opacity: 0.7;
+}
+
+/* תגי קטגוריה */
+.category-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  color: white;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-align: center;
+  min-width: 80px;
+}
+
+/* כפתורי פעולה */
+.action-buttons {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.approve-btn,
+.edit-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  min-width: 60px;
+}
+
+.approve-btn {
+  background: #28a745;
+  color: white;
+}
+
+.approve-btn:hover {
+  background: #218838;
+}
+
+.approve-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.edit-btn {
+  background: #ffc107;
+  color: #333;
+}
+
+.edit-btn:hover {
+  background: #e0a800;
+}
+
+.approved-badge {
+  background: #28a745;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+/* מודל עריכה */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 15px;
+  padding: 0;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  background: linear-gradient(135deg, #667eea, #8ec3ff);
+  color: white;
+  padding: 20px;
+  border-radius: 15px 15px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-body {
+  padding: 25px;
+}
+
+.modal-body p {
+  margin: 0 0 15px 0;
+  color: #666;
+}
+
+.modal-body label {
+  display: block;
+  font-weight: bold;
+  margin: 15px 0 5px 0;
+  color: #333;
+}
+
+.modal-body select {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #e1e5ff;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.modal-footer {
+  padding: 20px 25px;
+  border-top: 1px solid #eee;
+  display: flex;
+  gap: 10px;
+  justify-content: left;
+}
+
+.save-btn,
+.cancel-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.save-btn {
+  background: #28a745;
+  color: white;
+}
+
+.save-btn:hover {
+  background: #218838;
+}
+
+.cancel-btn {
+  background: #6c757d;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background: #5a6268;
+}
+
+/* הודעת סיום */
+.completion-message {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  padding: 50px;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(40, 167, 69, 0.3);
+}
+
+.completion-message h2 {
+  margin: 0 0 15px 0;
+  font-size: 2.5rem;
+}
+
+.completion-message p {
+  margin: 0 0 30px 0;
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+.return-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 15px 30px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.return-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+/* רספונסיבי */
+@media (max-width: 768px) {
+  .filters-row {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .table-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bulk-actions {
+    justify-content: center;
+  }
+
+  .training-table {
+    font-size: 0.8rem;
+  }
+
+  .training-table th,
+  .training-table td {
+    padding: 8px 5px;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .modal-content {
+    width: 95%;
+    margin: 10px;
+  }
+}
+/* כפתורי קטגוריה חדשה */
+.add-category-btn {
+  background: #17a2b8;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.add-category-btn:hover {
+  background: #138496;
+  transform: translateY(-1px);
+}
+
+.save-new-btn,
+.cancel-new-btn {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-left: 5px;
+  transition: all 0.3s ease;
+}
+
+.save-new-btn {
+  background: #28a745;
+  color: white;
+}
+
+.save-new-btn:hover {
+  background: #218838;
+}
+
+.cancel-new-btn {
+  background: #6c757d;
+  color: white;
+}
+
+.cancel-new-btn:hover {
+  background: #5a6268;
+}
+
+#new-category-name,
+#new-category-color,
+#new-category-icon {
+  width: 100%;
+  padding: 8px;
+  border: 2px solid #e1e5ff;
+  border-radius: 5px;
+  margin-top: 5px;
+  font-size: 0.9rem;
+}
+
+#new-category-color {
+  height: 40px;
+  padding: 2px;
+}
+
+#new-category-section {
+  background: #f8f9ff;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #e1e5ff;
+}

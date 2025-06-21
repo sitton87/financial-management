@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>📋 עסקאות - ניהול פיננסי</title>
+
+    <!-- External Scripts -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+    <!-- Our Styles and Scripts -->
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/transactions.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- 🔐 מסך התחברות -->
+      <div id="login-screen" style="display: none">
+        <div class="login-container">
+          <h1>💳 ניהול פיננסי</h1>
+          <p style="margin: 20px 0; color: #666">התחבר כדי לגשת למערכת</p>
+          <button id="login-btn" class="login-btn">
+            <span>🔐</span>
+            התחבר עם Google
+          </button>
+        </div>
+      </div>
+
+      <!-- ❌ מסך גישה נדחתה -->
+      <div id="access-denied" style="display: none">
+        <div class="login-container">
+          <h1>❌ גישה נדחתה</h1>
+          <p style="margin: 20px 0; color: #dc3545">
+            אין לך הרשאה לגשת למערכת.<br />
+            פנה למנהל המערכת.
+          </p>
+          <button id="logout-btn-denied" class="logout-btn">התנתק</button>
+        </div>
+      </div>
+
+      <!-- 📊 המערכת הראשית -->
+      <div id="main-app" style="display: none">
+        <!-- הכותרת תתמלא ב-JavaScript -->
+        <div id="header-container"></div>
+
+        <div id="loading" class="loading">
+          <h3>📋 טוען עסקאות...</h3>
+        </div>
+
+        <div id="error-message" class="error" style="display: none"></div>
+
+        <div id="content" style="display: none">
+          <!-- 🔍 סרגל חיפוש ופילטרים -->
+          <div class="filters-container">
+            <div class="filters-row">
+              <div class="search-box">
+                <input
+                  type="text"
+                  id="search-input"
+                  placeholder="🔍 חיפוש לפי שם עסק..."
+                />
+              </div>
+
+              <div class="filter-selects">
+                <select id="category-filter">
+                  <option value="">כל הקטגוריות</option>
+                </select>
+
+                <select id="company-filter">
+                  <option value="">כל החברות</option>
+                </select>
+
+                <select id="card-filter">
+                  <option value="">כל הכרטיסים</option>
+                </select>
+              </div>
+
+              <div class="date-filters">
+                <input type="date" id="date-from" title="מתאריך" />
+                <input type="date" id="date-to" title="עד תאריך" />
+              </div>
+
+              <button id="clear-filters" class="clear-btn">🗑️ נקה</button>
+            </div>
+          </div>
+
+          <!-- 📊 סיכום מהיר -->
+          <div class="summary-cards">
+            <div class="summary-card">
+              <div class="summary-value" id="filtered-count">0</div>
+              <div class="summary-label">עסקאות</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-value" id="filtered-total">₪0</div>
+              <div class="summary-label">סה"כ</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-value" id="filtered-avg">₪0</div>
+              <div class="summary-label">ממוצע</div>
+            </div>
+          </div>
+
+          <!-- 📋 טבלת עסקאות -->
+          <div class="transactions-container">
+            <div class="table-header">
+              <h3>📋 עסקאות</h3>
+              <div class="table-controls">
+                <button id="export-btn" class="export-btn">
+                  📤 ייצוא Excel
+                </button>
+                <select id="page-size">
+                  <option value="25">25 בדף</option>
+                  <option value="50" selected>50 בדף</option>
+                  <option value="100">100 בדף</option>
+                  <option value="all">הכל</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="table-wrapper">
+              <table id="transactions-table">
+                <thead>
+                  <tr>
+                    <th data-sort="transaction_date">
+                      📅 תאריך <span class="sort-arrow"></span>
+                    </th>
+                    <th data-sort="business_name">
+                      🏪 עסק <span class="sort-arrow"></span>
+                    </th>
+                    <th data-sort="amount">
+                      💰 סכום <span class="sort-arrow"></span>
+                    </th>
+                    <th data-sort="category">
+                      📂 קטגוריה <span class="sort-arrow"></span>
+                    </th>
+                    <th data-sort="company">
+                      💳 חברה <span class="sort-arrow"></span>
+                    </th>
+                    <th data-sort="card_last_four">
+                      🔢 כרטיס <span class="sort-arrow"></span>
+                    </th>
+                    <th>⚙️ פעולות</th>
+                  </tr>
+                </thead>
+                <tbody id="transactions-tbody">
+                  <!-- הנתונים יתמלאו ב-JavaScript -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- 📄 ניווט דפים -->
+            <div class="pagination" id="pagination">
+              <!-- כפתורי ניווט יתמלאו ב-JavaScript -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🛠️ מודל עריכת קטגוריה -->
+    <div id="edit-modal" class="modal" style="display: none">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>✏️ עריכת קטגוריה</h3>
+          <button class="close-modal" id="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>עסק: <strong id="edit-business-name"></strong></p>
+          <p>סכום: <strong id="edit-amount"></strong></p>
+          <label for="edit-category-select">קטגוריה חדשה:</label>
+          <select id="edit-category-select">
+            <!-- אפשרויות יתמלאו ב-JavaScript -->
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button id="save-category" class="save-btn">💾 שמור</button>
+          <button id="cancel-edit" class="cancel-btn">❌ ביטול</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Our Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/transactions.js"></script>
+    ← החלף!
+  </body>
+</html>

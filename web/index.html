@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>💳 ניהול פיננסי - דף הבית</title>
+
+    <!-- External Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+    <!-- Our Styles and Scripts -->
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- 🔐 מסך התחברות -->
+      <div id="login-screen" style="display: none">
+        <div class="login-container">
+          <h1>💳 ניהול פיננסי</h1>
+          <p style="margin: 20px 0; color: #666">התחבר כדי לגשת למערכת</p>
+          <button id="login-btn" class="login-btn">
+            <span>🔐</span>
+            התחבר עם Google
+          </button>
+        </div>
+      </div>
+
+      <!-- ❌ מסך גישה נדחתה -->
+      <div id="access-denied" style="display: none">
+        <div class="login-container">
+          <h1>❌ גישה נדחתה</h1>
+          <p style="margin: 20px 0; color: #dc3545">
+            אין לך הרשאה לגשת למערכת.<br />
+            פנה למנהל המערכת.
+          </p>
+          <button id="logout-btn-denied" class="logout-btn">התנתק</button>
+        </div>
+      </div>
+
+      <!-- 📊 המערכת הראשית -->
+      <div id="main-app" style="display: none">
+        <!-- 🆕 הכותרת תתמלא ב-JavaScript -->
+        <div id="header-container"></div>
+
+        <div id="loading" class="loading">
+          <h3>📊 טוען נתונים...</h3>
+        </div>
+
+        <div id="error-message" class="error" style="display: none"></div>
+
+        <div id="content" style="display: none">
+          <!-- סטטיסטיקות כלליות -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-value" id="total-amount">₪0</div>
+              <div class="stat-label">סה"כ הוצאות החודש</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="total-transactions">0</div>
+              <div class="stat-label">מספר עסקאות</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="avg-transaction">₪0</div>
+              <div class="stat-label">ממוצע לעסקה</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="top-category">-</div>
+              <div class="stat-label">קטגוריה מובילה</div>
+            </div>
+          </div>
+
+          <!-- גרפים -->
+          <div class="charts-grid">
+            <div class="chart-container">
+              <h3 class="chart-title">📈 הוצאות לפי חודשים</h3>
+              <canvas id="monthlyChart"></canvas>
+            </div>
+            <div class="chart-container">
+              <h3 class="chart-title">🥧 התפלגות לפי קטגוריות</h3>
+              <canvas id="categoryChart"></canvas>
+            </div>
+          </div>
+
+          <!-- עסקאות אחרונות -->
+          <div class="recent-transactions">
+            <h3 class="chart-title">📋 עסקאות אחרונות</h3>
+            <div id="recent-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Our Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+  </body>
+</html>

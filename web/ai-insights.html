@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🧠 תובנות AI - ניהול פיננסי</title>
+
+    <!-- External Scripts -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+    <!-- Our Styles and Scripts -->
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/ai-insights.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- 🔐 מסך התחברות -->
+      <div id="login-screen" style="display: none">
+        <div class="login-container">
+          <h1>💳 ניהול פיננסי</h1>
+          <p style="margin: 20px 0; color: #666">התחבר כדי לגשת למערכת</p>
+          <button id="login-btn" class="login-btn">
+            <span>🔐</span>
+            התחבר עם Google
+          </button>
+        </div>
+      </div>
+
+      <!-- ❌ מסך גישה נדחתה -->
+      <div id="access-denied" style="display: none">
+        <div class="login-container">
+          <h1>❌ גישה נדחתה</h1>
+          <p style="margin: 20px 0; color: #dc3545">
+            אין לך הרשאה לגשת למערכת.<br />
+            פנה למנהל המערכת.
+          </p>
+          <button id="logout-btn-denied" class="logout-btn">התנתק</button>
+        </div>
+      </div>
+
+      <!-- 🧠 המערכת הראשית -->
+      <div id="main-app" style="display: none">
+        <!-- הכותרת תתמלא ב-JavaScript -->
+        <div id="header-container"></div>
+
+        <div id="loading" class="loading">
+          <h3>🧠 טוען תובנות AI...</h3>
+        </div>
+
+        <div id="error-message" class="error" style="display: none"></div>
+
+        <div id="ai-content" style="display: none">
+          <!-- 📊 סטטיסטיקות AI -->
+          <div class="ai-stats-grid">
+            <div class="ai-stat-card">
+              <div class="stat-value" id="ai-accuracy">0%</div>
+              <div class="stat-label">דיוק השבוע</div>
+            </div>
+            <div class="ai-stat-card">
+              <div class="stat-value" id="ai-processed">0</div>
+              <div class="stat-label">עסקאות מעובדות</div>
+            </div>
+            <div class="ai-stat-card">
+              <div class="stat-value" id="ai-learned">0</div>
+              <div class="stat-label">עסקים נלמדו</div>
+            </div>
+            <div class="ai-stat-card">
+              <div class="stat-value" id="ai-improvement">+0%</div>
+              <div class="stat-label">שיפור מהשבוע שעבר</div>
+            </div>
+          </div>
+
+          <!-- 🧠 קטע אימון ראשוני -->
+          <div
+            id="training-needed"
+            class="training-alert"
+            style="display: none"
+          >
+            <div class="training-alert-content">
+              <h3>🧠 נדרש אימון ראשוני</h3>
+              <p>
+                כדי שה-AI יעבוד בצורה מיטבית, נדרש לאמן אותו על כל העסקים
+                הקיימים
+              </p>
+              <div class="training-stats">
+                <span id="training-progress-text">0 מתוך 0 עסקים אומנו</span>
+              </div>
+              <button id="start-training" class="training-btn">
+                🚀 התחל אימון ראשוני
+              </button>
+            </div>
+          </div>
+
+          <!-- 💡 הצעות שיפור -->
+          <div class="suggestions-section">
+            <h3>💡 הצעות שיפור</h3>
+            <div id="suggestions-list">
+              <!-- יתמלא ב-JavaScript -->
+            </div>
+          </div>
+
+          <!-- 🔍 עסקים חדשים לאישור -->
+          <div class="new-businesses-section">
+            <h3>🔍 עסקים חדשים לאישור</h3>
+            <div id="new-businesses-list">
+              <!-- יתמלא ב-JavaScript -->
+            </div>
+          </div>
+
+          <!-- 🚀 אימון מחדש -->
+          <div class="retrain-section">
+            <h3>🚀 אימון מחדש</h3>
+            <p>אמן את ה-AI מחדש על כל הנתונים לשיפור הדיוק</p>
+            <button id="retrain-btn" class="retrain-btn">🧠 אמן מחדש</button>
+            <div id="retrain-status" style="display: none"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Our Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/ai-insights.js"></script>
+  </body>
+</html>

@@ -1,0 +1,43 @@
+# 🔐 קבצים רגישים
+config.json
+*.key
+*.pem
+.env
+
+# 🐍 Python
+financial-env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+
+# 📊 קבצי נתונים
+*.xlsx
+*.xls
+*.csv
+data/
+uploads/
+
+# 🗂️ תיקיות זמניות
+temp/
+tmp/
+logs/
+.cache/
+
+# 💻 IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 🌐 Node modules (אם נצטרך בעתיד)
+node_modules/
+npm-debug.log*
+
+# 📱 OS
+.DS_Store
+Thumbs.db
