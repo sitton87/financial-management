@@ -112,7 +112,7 @@ function showMainApp() {
   if (headerContainer && window.navbarModule) {
     headerContainer.innerHTML = window.navbarModule.createHeader(
       "מערכת ניהול פיננסי",
-      "ניהול וצפייה בעסקאות",
+      window.authModule.currentUser(), // ✅ פרטי המשתמש
       "transactions"
     );
   }

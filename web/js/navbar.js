@@ -1,86 +1,183 @@
-// 🧭 מערכת ניווט משותפת לכל הדפים
-function createNavbar(currentPage = "") {
-  return `
-        <nav class="nav">
-    <a href="index.html" class="${
-      currentPage === "home" ? "nav-btn active" : "nav-btn"
-    }">🏠 דף הבית</a>
-    <a href="transactions.html" class="${
-      currentPage === "transactions" ? "nav-btn active" : "nav-btn"
-    }">📋 עסקאות</a>
-    <a href="categories.html" class="${
-      currentPage === "categories" ? "nav-btn active" : "nav-btn"
-    }">📊 קטגוריות</a>
-    <a href="ai-insights.html" class="${
-      currentPage === "ai-insights" ? "nav-btn active" : "nav-btn"
-    }">🧠 תובנות AI</a>
-    <a href="comparisons.html" class="${
-      currentPage === "comparisons" ? "nav-btn active" : "nav-btn"
-    }">📈 השוואות</a>
-</nav>
+// 🧭 מודול ניווט מחודש - navbar.js
+const navbarModule = {
+  // 🎨 יצירת Header מלא עם ניווט וזאזור משתמש
+  createHeader: function (pageTitle, userInfo, currentPage = "") {
+    const systemTitle = "💳 מערכת ניהול פיננסי";
+    const dynamicPageTitle = this.getPageTitle(currentPage);
+
+    return `
+      <!-- 🔝 שורה עליונה - קבועה -->
+      <div class="top-bar">
+        <!-- 🏢 שם המערכת - שמאל -->
+        <div class="system-area">
+          <h2 class="system-title">${systemTitle}</h2>
+        </div>
+        
+        <!-- 🧭 ניווט ראשי - מרכז -->
+        <nav class="main-nav">
+          ${this.createNavLinks(currentPage)}
+        </nav>
+        
+        <!-- 👤 אזור משתמש - ימין -->
+        <div class="user-area">
+          <div class="user-info-compact">
+            <span class="user-greeting">שלום, ${this.extractUserName(
+              userInfo
+            )}</span>
+            <button class="logout-btn-compact" onclick="window.authModule?.signOut()">
+              🚪 התנתק
+            </button>
+          </div>
+        </div>
+        
+        <!-- 📱 כפתור המבורגר - מובייל -->
+        <div class="mobile-menu-toggle" onclick="navbarModule.toggleMobileMenu()">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+      
+      <!-- 📋 כותרת העמוד הדינמית -->
+      <div class="page-header">
+        <h1 class="page-title">${dynamicPageTitle}</h1>
+        <p class="page-description">${this.getPageDescription(currentPage)}</p>
+      </div>
+      
+      <!-- 📱 ניווט מובייל -->
+      <div class="mobile-nav" id="mobile-nav">
+        ${this.createMobileNavLinks(currentPage)}
+      </div>
     `;
-}
+  },
 
-// 🔗 פונקציה ליצירת כותרת מלאה עם פרטי משתמש + ניווט
-function createHeader(title, subtitle, currentPage = "") {
-  return `
-        <header class="header">
-            <!-- פרטי משתמש -->
-            <div id="user-info" class="user-info">
-                <div class="user-details">
-                    <img id="user-avatar" class="user-avatar" src="" alt="">
-                    <div>
-                        <div id="user-name" style="font-weight: bold;"></div>
-                        <div id="user-email" style="font-size: 0.8rem; color: #666;"></div>
-                    </div>
-                </div>
-                <button id="logout-btn" class="logout-btn">התנתק</button>
-            </div>
+  // 🔗 יצירת קישורי ניווט
+  createNavLinks: function (currentPage) {
+    const navItems = [
+      { id: "home", label: "🏠 דף הבית", href: "index.html" },
+      { id: "transactions", label: "💳 עסקאות", href: "transactions.html" },
+      { id: "categories", label: "🏷️ קטגוריות", href: "categories.html" },
+      { id: "ai-insights", label: "🤖 תובנות AI", href: "ai-insights.html" },
+      { id: "training", label: "🎓 הדרכה", href: "training.html" },
+    ];
 
-            <h1>💳 ${title}</h1>
-            <p>${subtitle}</p>
-            
-            ${createNavbar(currentPage)}
-        </header>
-    `;
-}
+    return navItems
+      .map(
+        (item) => `
+      <a href="${item.href}" 
+         class="nav-link ${currentPage === item.id ? "active" : ""}"
+         data-page="${item.id}">
+        ${item.label}
+      </a>
+    `
+      )
+      .join("");
+  },
 
-// 🎨 הוספת סגנון לכפתור פעיל
-function addNavbarStyles() {
-  const style = document.createElement("style");
-  style.textContent = `
-        .nav-btn.active {
-            background: linear-gradient(135deg, #28a745, #20c997) !important;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-    `;
-  document.head.appendChild(style);
-}
+  // 📱 יצירת ניווט מובייל
+  createMobileNavLinks: function (currentPage) {
+    const navItems = [
+      { id: "home", label: "🏠 דף הבית", href: "index.html" },
+      { id: "transactions", label: "💳 עסקאות", href: "transactions.html" },
+      { id: "categories", label: "🏷️ קטגוריות", href: "categories.html" },
+      { id: "ai-insights", label: "🤖 תובנות AI", href: "ai-insights.html" },
+      { id: "training", label: "🎓 הדרכה", href: "training.html" },
+    ];
 
-// 🚀 אתחול הניווט
-function initNavbar(currentPage = "") {
-  // הוספת סגנונות
-  addNavbarStyles();
+    return navItems
+      .map(
+        (item) => `
+      <a href="${item.href}" 
+         class="mobile-nav-link ${currentPage === item.id ? "active" : ""}"
+         onclick="navbarModule.closeMobileMenu()">
+        ${item.label}
+      </a>
+    `
+      )
+      .join("");
+  },
 
-  // החלפת הכותרת אם קיימת
-  const headerElement = document.querySelector(".header");
-  if (headerElement) {
-    const title =
-      headerElement.querySelector("h1")?.textContent || "מערכת ניהול פיננסי";
-    const subtitle =
-      headerElement.querySelector("p")?.textContent ||
-      "מבט כללי על ההוצאות שלך";
+  // 📱 פתיחה/סגירה של תפריט מובייל
+  toggleMobileMenu: function () {
+    const mobileNav = document.getElementById("mobile-nav");
+    const toggle = document.querySelector(".mobile-menu-toggle");
 
-    headerElement.innerHTML = createHeader(title, subtitle, currentPage)
-      .replace('<header class="header">', "")
-      .replace("</header>", "");
-  }
-}
+    if (mobileNav && toggle) {
+      mobileNav.classList.toggle("open");
+      toggle.classList.toggle("open");
+    }
+  },
 
-// 📤 ייצוא לשימוש גלובלי
-window.navbarModule = {
-  createNavbar,
-  createHeader,
-  initNavbar,
+  closeMobileMenu: function () {
+    const mobileNav = document.getElementById("mobile-nav");
+    const toggle = document.querySelector(".mobile-menu-toggle");
+
+    if (mobileNav && toggle) {
+      mobileNav.classList.remove("open");
+      toggle.classList.remove("open");
+    }
+  },
+
+  // 📋 קבלת כותרת דף דינמית
+  getPageTitle: function (pageId) {
+    const pageTitles = {
+      home: "📊 דשבורד ראשי",
+      transactions: "💳 רשימת עסקאות",
+      categories: "🏷️ ניהול קטגוריות",
+      "ai-insights": "🤖 תובנות בינה מלאכותית",
+      training: "🎓 מרכז הדרכה ולמידה",
+    };
+
+    return pageTitles[pageId] || "📊 מערכת ניהול פיננסי";
+  },
+
+  // 📝 קבלת משפט הסבר לדף
+  getPageDescription: function (pageId) {
+    const pageDescriptions = {
+      home: "כאן תוכל לראות סקירה כללית של המצב הפיננסי שלך ותובנות חשובות",
+      transactions: "כאן תוכל לראות את כל העסקאות שלך, לערוך ולנהל אותן",
+      categories: "כאן תוכל לנהל את קטגוריות העסקאות ולהתאים אותן לצרכים שלך",
+      "ai-insights": "כאן תוכל לקבל תובנות חכמות על הרגלי ההוצאה והחיסכון שלך",
+      training: "כאן תוכל ללמוד איך להשתמש במערכת ולקבל טיפים לניהול פיננסי",
+    };
+
+    return pageDescriptions[pageId] || "ברוך הבא למערכת ניהול פיננסי מתקדמת";
+  },
+
+  // 👤 חילוץ שם משתמש
+  extractUserName: function (userInfo) {
+    if (typeof userInfo === "string") {
+      if (userInfo.includes("שלום")) {
+        return userInfo.replace("שלום ", "");
+      }
+      return userInfo;
+    }
+    return userInfo?.name || userInfo?.email || "משתמש";
+  },
+
+  // 🎯 עדכון כותרת עמוד
+  updatePageTitle: function (title) {
+    const pageTitleElement = document.querySelector(".page-title");
+    if (pageTitleElement) {
+      pageTitleElement.textContent = title;
+    }
+  },
+
+  // ⭐ סימון דף פעיל
+  setActivePage: function (pageId) {
+    // הסרת active מכל הקישורים
+    document.querySelectorAll(".nav-link, .mobile-nav-link").forEach((link) => {
+      link.classList.remove("active");
+    });
+
+    // הוספת active לדף הנוכחי
+    document.querySelectorAll(`[data-page="${pageId}"]`).forEach((link) => {
+      link.classList.add("active");
+    });
+  },
 };
+
+// ייצוא גלובלי
+window.navbarModule = navbarModule;
+
+console.log("🧭 Navbar module טוען...");

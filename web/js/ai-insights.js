@@ -97,8 +97,8 @@ function showMainApp() {
   const headerContainer = document.getElementById("header-container");
   if (headerContainer && window.navbarModule) {
     headerContainer.innerHTML = window.navbarModule.createHeader(
-      "תובנות AI חכמות",
-      "למידה מכונה לקטגוריזציה אוטומטית",
+      "מערכת ניהול פיננסי",
+      window.authModule.currentUser(),
       "ai-insights"
     );
   }

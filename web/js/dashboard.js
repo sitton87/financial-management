@@ -339,6 +339,10 @@ function updateStatsDisplay(stats) {
 
 // 📈 יצירת גרפים
 async function createCharts(stats) {
+  // קודם נקה גרפים קיימים
+  destroyExistingCharts();
+
+  // אחר כך צור חדשים
   createMonthlyChart(stats.monthlyData);
   createWeeklyChart(stats.weeklyData);
   createCategoryChart(stats.categoryData);
@@ -1044,3 +1048,87 @@ window.dashboardModule = {
 };
 
 console.log("🏠 Dashboard module טוען...");
+
+// הוסף את הפונקציות האלה ל-dashboard.js
+
+// 🧹 ניקוי גרפים קיימים
+function destroyExistingCharts() {
+  console.log("🧹 מנקה גרפים קיימים...");
+
+  try {
+    if (monthlyChart) {
+      monthlyChart.destroy();
+      monthlyChart = null;
+      console.log("✅ גרף חודשי נוקה");
+    }
+
+    if (weeklyChart) {
+      weeklyChart.destroy();
+      weeklyChart = null;
+      console.log("✅ גרף שבועי נוקה");
+    }
+
+    if (categoryChart) {
+      categoryChart.destroy();
+      categoryChart = null;
+      console.log("✅ גרף קטגוריות נוקה");
+    }
+
+    if (dailyChart) {
+      dailyChart.destroy();
+      dailyChart = null;
+      console.log("✅ גרף יומי נוקה");
+    }
+
+    console.log("🧹 ניקוי גרפים הושלם");
+  } catch (error) {
+    console.warn("⚠️ שגיאה בניקוי גרפים:", error);
+  }
+}
+
+// 🔧 עדכן את הפונקציה createCharts:
+async function createCharts(stats) {
+  // קודם נקה גרפים קיימים
+  destroyExistingCharts();
+
+  // אחר כך צור חדשים
+  createMonthlyChart(stats.monthlyData);
+  createWeeklyChart(stats.weeklyData);
+  createCategoryChart(stats.categoryData);
+  createDailyTrendChart(stats.dailyTrendData);
+}
+
+// 🔧 הוסף ניקוי גם בעדכוני Dropdown (אם לא קיים):
+function updateMonthlyChart() {
+  const months = parseInt(document.getElementById("monthlyRange").value);
+  console.log(`📈 מעדכן גרף חודשי ל-${months} חודשים`);
+
+  const monthlyData = calculateMonthlyData(months);
+
+  // הרס גרף קיים בצורה בטוחה
+  if (monthlyChart) {
+    try {
+      monthlyChart.destroy();
+      monthlyChart = null;
+    } catch (error) {
+      console.warn("⚠️ שגיאה בהרס גרף חודשי:", error);
+    }
+  }
+
+  createMonthlyChart(monthlyData);
+  console.log(`✅ גרף חודשי עודכן ל-${months} חודשים`);
+}
+
+// 🔧 הוסף event listener לניקוי כשעוזבים דף:
+window.addEventListener("beforeunload", function () {
+  console.log("🚪 עוזב דף - מנקה גרפים...");
+  destroyExistingCharts();
+});
+
+// 🔧 הוסף ניקוי גם כשהדף נסתר:
+document.addEventListener("visibilitychange", function () {
+  if (document.hidden) {
+    console.log("👁️ דף נסתר - מנקה גרפים...");
+    destroyExistingCharts();
+  }
+});
