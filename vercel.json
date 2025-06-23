@@ -2,23 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "web/**/*",
+      "src": "web/**",
       "use": "@vercel/static"
-    },
-    {
-      "src": "backend/**/*.py",
-      "use": "@vercel/python"
     }
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "/backend/$1.py"
-    },
-    {
       "src": "/(.*)",
       "dest": "/web/$1"
     }
-  ],
-  "outputDirectory": "web"
+  ]
 }
