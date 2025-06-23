@@ -1,0 +1,16 @@
+{
+  "name": "financial-management-system",
+  "version": "1.0.0",
+  "description": "מערכת ניהול פיננסי מתקדמת",
+  "scripts": {
+    "build": "echo 'No build step required'",
+    "dev": "python -m http.server 8000 --directory web"
+  },
+  "keywords": [
+    "finance",
+    "management",
+    "dashboard"
+  ],
+  "author": "Israel Siton",
+  "license": "MIT"
+}

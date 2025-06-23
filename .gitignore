@@ -1,9 +1,10 @@
 # 🔐 קבצים רגישים
 config.json
-config.js
 *.key
 *.pem
 .env
+.env.local
+.env.production
 
 # 🐍 Python
 financial-env/
@@ -42,3 +43,6 @@ npm-debug.log*
 # 📱 OS
 .DS_Store
 Thumbs.db
+
+# ☁️ Vercel
+.vercel
