@@ -1,5 +1,6 @@
 # 🔐 קבצים רגישים
 config.json
+config.js
 *.key
 *.pem
 .env

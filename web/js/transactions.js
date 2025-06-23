@@ -1,15 +1,21 @@
-// 📋 מערכת ניהול עסקאות מתקדמת
+// 📋 מערכת ניהול עסקאות מתקדמת - מעודכן למבנה החדש
 let allTransactions = [];
 let filteredTransactions = [];
 let currentPage = 1;
 let pageSize = 50;
-let sortField = "transaction_date";
+let sortField = "date"; // 🔧 שונה מ-transaction_date ל-date
 let sortDirection = "desc";
 let categories = [];
 
 // 🚀 אתחול הדף - עם המתנה נכונה
 window.addEventListener("DOMContentLoaded", async () => {
   console.log("🔄 מאתחל דף עסקאות...");
+
+  // המתנה ש-config יטען
+  while (!window.appConfig?.loaded) {
+    console.log("⏳ ממתין לconfig...");
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
 
   // המתנה שauth.js יסיים
   let attempts = 0;
@@ -48,7 +54,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-// 🔐 פונקציות אותנטיקציה (העתקה מauth.js)
+// 🔐 פונקציות אותנטיקציה (מעודכן למבנה החדש)
 async function checkUserAuthorization(email) {
   console.log("🔍 בודק הרשאה עבור:", email);
 
@@ -61,8 +67,10 @@ async function checkUserAuthorization(email) {
 
     console.log("✅ Supabase זמין, שולח שאילתה...");
 
+    // 🔧 עדכון לשם הטבלה החדש
+    const tableName = window.appConfig.getTableName("authorized_users");
     const { data, error } = await supabase
-      .from("authorized_users")
+      .from(tableName)
       .select("email")
       .eq("email", email)
       .single();
@@ -113,6 +121,9 @@ function showMainApp() {
 // 📊 אתחול דף עסקאות
 async function initTransactionsPage() {
   try {
+    // 🔧 הגדרת pageSize מconfig
+    pageSize = window.appConfig.getAppConfig().paginationSize;
+
     // טעינת נתונים
     await Promise.all([loadTransactions(), loadCategories()]);
 
@@ -128,42 +139,207 @@ async function initTransactionsPage() {
   }
 }
 
-// 📥 טעינת עסקאות
+// 📥 טעינת עסקאות (עם טעינה בחלקים)
 async function loadTransactions() {
-  const { data: transactions, error } = await window.authModule
-    .supabase()
-    .from("transactions")
-    .select(
-      `
-            *,
-            categories (name, color, icon)
+  try {
+    const transactionsTable = window.appConfig.getTableName("transactions");
+    const categoriesTable = window.appConfig.getTableName("categories");
+
+    console.log(`📊 טוען עסקאות מטבלה: ${transactionsTable}`);
+
+    // ספירה לבדיקה
+    const { count, error: countError } = await window.authModule
+      .supabase()
+      .from(transactionsTable)
+      .select("*", { count: "exact", head: true });
+
+    if (countError) {
+      console.error("❌ שגיאה בספירת עסקאות:", countError);
+      throw countError;
+    }
+
+    console.log(`📊 סה"כ עסקאות בטבלה: ${count}`);
+
+    // 🚀 טעינה בחלקים (batches)
+    const batchSize = 1000;
+    let allTransactionsData = [];
+
+    for (let offset = 0; offset < count; offset += batchSize) {
+      const endRange = Math.min(offset + batchSize - 1, count - 1);
+
+      console.log(
+        `📥 טוען batch ${
+          Math.floor(offset / batchSize) + 1
+        }: שורות ${offset}-${endRange}`
+      );
+
+      const { data: batch, error: batchError } = await window.authModule
+        .supabase()
+        .from(transactionsTable)
+        .select(
+          `
+          identifier,
+          cardlast4,
+          date,
+          description,
+          memo,
+          originalamount,
+          chargedamount,
+          originalcurrency,
+          chargedcurrency,
+          category_id,
+          category,
+          is_ai_categorized,
+          installment_info,
+          created_at,
+          source_file,
+          ${categoriesTable} (
+            id,
+            name,
+            color,
+            icon
+          )
         `
-    )
-    .order("transaction_date", { ascending: false });
+        )
+        .order("date", { ascending: false })
+        .range(offset, endRange);
 
-  if (error) throw error;
+      if (batchError) {
+        console.error(
+          `❌ שגיאה בטעינת batch ${Math.floor(offset / batchSize) + 1}:`,
+          batchError
+        );
+        throw batchError;
+      }
 
-  allTransactions = transactions;
-  filteredTransactions = [...allTransactions];
+      console.log(
+        `✅ נטען batch ${Math.floor(offset / batchSize) + 1}: ${
+          batch.length
+        } עסקאות`
+      );
+      allTransactionsData.push(...batch);
 
-  // עדכון פילטרים
-  populateFilters();
+      // עצירה אם קיבלנו פחות מהצפוי (סיימנו)
+      if (batch.length < batchSize) {
+        console.log(`🏁 סיימנו טעינה מוקדמת - batch אחרון`);
+        break;
+      }
+    }
 
-  // הצגת הנתונים
-  updateSummary();
-  renderTable();
+    console.log(
+      `🎉 סיימנו טעינה: ${allTransactionsData.length} עסקאות נטענו בסך הכל`
+    );
+
+    // עיבוד הנתונים
+    allTransactions = processTransactionData(allTransactionsData);
+    filteredTransactions = [...allTransactions];
+
+    // עדכון התצוגה
+    populateFilters();
+    updateSummary();
+    renderTable();
+  } catch (error) {
+    console.error("❌ שגיאה בטעינת עסקאות:", error);
+    throw error;
+  }
 }
 
-// 📂 טעינת קטגוריות
-async function loadCategories() {
-  const { data, error } = await window.authModule
-    .supabase()
-    .from("categories")
-    .select("*")
-    .order("name");
+// 🔧 פונקציה נפרדת לעיבוד נתונים
+function processTransactionData(transactions) {
+  return transactions.map((transaction) => ({
+    ...transaction,
+    // תאימות לאחור - המרה לשמות שהקוד מצפה להם
+    business_name: transaction.description || "לא מוגדר",
+    amount: transaction.chargedamount || transaction.originalamount || 0,
+    transaction_date: transaction.date,
+    company: extractCompanyFromDescription(transaction.description),
+    card_last_four: transaction.cardlast4,
+    // שמירה על הנתונים המקוריים
+    original_data: {
+      identifier: transaction.identifier,
+      cardlast4: transaction.cardlast4,
+      originalamount: transaction.originalamount,
+      chargedamount: transaction.chargedamount,
+      originalcurrency: transaction.originalcurrency,
+      chargedcurrency: transaction.chargedcurrency,
+    },
+  }));
+}
 
-  if (error) throw error;
-  categories = data;
+// 🏢 פונקציה לחישוב מידע תשלומים
+function calculateInstallmentInfo(memo, transactionDate) {
+  if (!memo) return "-";
+
+  // חיפוש אחר פורמט "X מתוך Y"
+  const match = memo.match(/(\d+)\s*מתוך\s*(\d+)/);
+
+  if (match) {
+    const currentPayment = parseInt(match[1]); // X
+    const totalPayments = parseInt(match[2]); // Y
+    const remainingPayments = totalPayments - currentPayment;
+
+    if (remainingPayments <= 0) {
+      return `<span class="installment-final">${currentPayment} מתוך ${totalPayments} - תשלום אחרון</span>`;
+    } else {
+      const date = new Date(transactionDate);
+      date.setMonth(date.getMonth() + remainingPayments);
+      const monthName = date.toLocaleDateString("he-IL", {
+        month: "long",
+        year: "2-digit",
+      });
+      return `<span class="installment-pending">${currentPayment} מתוך ${totalPayments}<br><small>אחרון: ${monthName}</small></span>`;
+    }
+  } else {
+    // אין פורמט תשלומים - החזר את memo המקורי
+    return `<span class="memo-text">${memo}</span>`;
+  }
+}
+
+// 🏢 חילוץ שם חברה מתיאור (פונקציה חדשה)
+function extractCompanyFromDescription(description) {
+  if (!description) return "לא מוגדר";
+
+  // רשימת חברות אשראי ידועות
+  const companies = {
+    visa: "ויזה",
+    mastercard: "מסטרקארד",
+    "american express": "אמריקן אקספרס",
+    isracard: "ישראכרט",
+    max: "מקס",
+    cal: "כאל",
+  };
+
+  const desc = description.toLowerCase();
+  for (const [key, value] of Object.entries(companies)) {
+    if (desc.includes(key)) {
+      return value;
+    }
+  }
+
+  // אם לא נמצא, תחזיר את המילה הראשונה
+  return description.split(" ")[0] || "לא מוגדר";
+}
+
+// 📂 טעינת קטגוריות (מעודכן)
+async function loadCategories() {
+  try {
+    const categoriesTable = window.appConfig.getTableName("categories");
+
+    const { data, error } = await window.authModule
+      .supabase()
+      .from(categoriesTable)
+      .select("*")
+      .eq("is_active", true)
+      .order("name");
+
+    if (error) throw error;
+
+    console.log(`✅ נטענו ${data.length} קטגוריות`);
+    categories = data;
+  } catch (error) {
+    console.error("❌ שגיאה בטעינת קטגוריות:", error);
+    throw error;
+  }
 }
 
 // 🔧 הגדרת event listeners
@@ -171,25 +347,27 @@ function setupEventListeners() {
   // חיפוש
   document
     .getElementById("search-input")
-    .addEventListener("input", applyFilters);
+    ?.addEventListener("input", applyFilters);
 
   // פילטרים
   document
     .getElementById("category-filter")
-    .addEventListener("change", applyFilters);
+    ?.addEventListener("change", applyFilters);
   document
     .getElementById("company-filter")
-    .addEventListener("change", applyFilters);
+    ?.addEventListener("change", applyFilters);
   document
     .getElementById("card-filter")
-    .addEventListener("change", applyFilters);
-  document.getElementById("date-from").addEventListener("change", applyFilters);
-  document.getElementById("date-to").addEventListener("change", applyFilters);
+    ?.addEventListener("change", applyFilters);
+  document
+    .getElementById("date-from")
+    ?.addEventListener("change", applyFilters);
+  document.getElementById("date-to")?.addEventListener("change", applyFilters);
 
   // ניקוי פילטרים
   document
     .getElementById("clear-filters")
-    .addEventListener("click", clearFilters);
+    ?.addEventListener("click", clearFilters);
 
   // מיון טבלה
   document.querySelectorAll("th[data-sort]").forEach((th) => {
@@ -197,7 +375,7 @@ function setupEventListeners() {
   });
 
   // גודל דף
-  document.getElementById("page-size").addEventListener("change", (e) => {
+  document.getElementById("page-size")?.addEventListener("change", (e) => {
     pageSize = e.target.value === "all" ? Infinity : parseInt(e.target.value);
     currentPage = 1;
     renderTable();
@@ -206,72 +384,79 @@ function setupEventListeners() {
   // ייצוא
   document
     .getElementById("export-btn")
-    .addEventListener("click", exportToExcel);
+    ?.addEventListener("click", exportToExcel);
 
   // מודל עריכה
-  document.getElementById("close-modal").addEventListener("click", closeModal);
-  document.getElementById("cancel-edit").addEventListener("click", closeModal);
+  document.getElementById("close-modal")?.addEventListener("click", closeModal);
+  document.getElementById("cancel-edit")?.addEventListener("click", closeModal);
   document
     .getElementById("save-category")
-    .addEventListener("click", saveCategoryEdit);
+    ?.addEventListener("click", saveCategoryEdit);
 }
 
-// 🔍 מילוי פילטרים
+// 🔍 מילוי פילטרים (מעודכן למבנה החדש)
 function populateFilters() {
-  // קטגוריות
+  // קטגוריות - עכשיו עם הטבלה החדשה
   const categoryFilter = document.getElementById("category-filter");
-  const uniqueCategories = [
-    ...new Set(
-      allTransactions.filter((t) => t.categories).map((t) => t.categories.name)
-    ),
-  ];
+  if (categoryFilter) {
+    const uniqueCategories = [
+      ...new Set(
+        allTransactions
+          .filter((t) => t.categories)
+          .map((t) => t.categories.name)
+      ),
+    ];
 
-  categoryFilter.innerHTML = '<option value="">כל הקטגוריות</option>';
-  uniqueCategories.forEach((category) => {
-    categoryFilter.innerHTML += `<option value="${category}">${category}</option>`;
-  });
+    categoryFilter.innerHTML = '<option value="">כל הקטגוריות</option>';
+    uniqueCategories.forEach((category) => {
+      categoryFilter.innerHTML += `<option value="${category}">${category}</option>`;
+    });
+  }
 
   // חברות
   const companyFilter = document.getElementById("company-filter");
-  const uniqueCompanies = [...new Set(allTransactions.map((t) => t.company))];
+  if (companyFilter) {
+    const uniqueCompanies = [...new Set(allTransactions.map((t) => t.company))];
 
-  companyFilter.innerHTML = '<option value="">כל החברות</option>';
-  uniqueCompanies.forEach((company) => {
-    companyFilter.innerHTML += `<option value="${company}">${company}</option>`;
-  });
+    companyFilter.innerHTML = '<option value="">כל החברות</option>';
+    uniqueCompanies.forEach((company) => {
+      companyFilter.innerHTML += `<option value="${company}">${company}</option>`;
+    });
+  }
 
-  // כרטיסים
+  // כרטיסים - עכשיו עם cardlast4
   const cardFilter = document.getElementById("card-filter");
-  const uniqueCards = [
-    ...new Set(
-      allTransactions
-        .filter((t) => t.card_last_four)
-        .map((t) => t.card_last_four)
-    ),
-  ];
+  if (cardFilter) {
+    const uniqueCards = [
+      ...new Set(
+        allTransactions.filter((t) => t.cardlast4).map((t) => t.cardlast4)
+      ),
+    ];
 
-  cardFilter.innerHTML = '<option value="">כל הכרטיסים</option>';
-  uniqueCards.forEach((card) => {
-    cardFilter.innerHTML += `<option value="${card}">****${card}</option>`;
-  });
+    cardFilter.innerHTML = '<option value="">כל הכרטיסים</option>';
+    uniqueCards.forEach((card) => {
+      cardFilter.innerHTML += `<option value="${card}">****${card}</option>`;
+    });
+  }
 }
 
-// 🔍 החלת פילטרים
+// 🔍 החלת פילטרים (מעודכן)
 function applyFilters() {
-  const searchTerm = document
-    .getElementById("search-input")
-    .value.toLowerCase();
-  const categoryFilter = document.getElementById("category-filter").value;
-  const companyFilter = document.getElementById("company-filter").value;
-  const cardFilter = document.getElementById("card-filter").value;
-  const dateFrom = document.getElementById("date-from").value;
-  const dateTo = document.getElementById("date-to").value;
+  const searchTerm =
+    document.getElementById("search-input")?.value.toLowerCase() || "";
+  const categoryFilter =
+    document.getElementById("category-filter")?.value || "";
+  const companyFilter = document.getElementById("company-filter")?.value || "";
+  const cardFilter = document.getElementById("card-filter")?.value || "";
+  const dateFrom = document.getElementById("date-from")?.value || "";
+  const dateTo = document.getElementById("date-to")?.value || "";
 
   filteredTransactions = allTransactions.filter((transaction) => {
     // חיפוש טקסט
     if (
       searchTerm &&
-      !transaction.business_name.toLowerCase().includes(searchTerm)
+      !transaction.business_name.toLowerCase().includes(searchTerm) &&
+      !transaction.description.toLowerCase().includes(searchTerm)
     ) {
       return false;
     }
@@ -286,13 +471,13 @@ function applyFilters() {
       return false;
     }
 
-    // כרטיס
-    if (cardFilter && transaction.card_last_four !== cardFilter) {
+    // כרטיס - עכשיו עם cardlast4
+    if (cardFilter && transaction.cardlast4 !== cardFilter) {
       return false;
     }
 
-    // תאריכים
-    const transactionDate = transaction.transaction_date;
+    // תאריכים - עכשיו עם date
+    const transactionDate = transaction.date;
     if (dateFrom && transactionDate < dateFrom) {
       return false;
     }
@@ -310,12 +495,18 @@ function applyFilters() {
 
 // 🗑️ ניקוי פילטרים
 function clearFilters() {
-  document.getElementById("search-input").value = "";
-  document.getElementById("category-filter").value = "";
-  document.getElementById("company-filter").value = "";
-  document.getElementById("card-filter").value = "";
-  document.getElementById("date-from").value = "";
-  document.getElementById("date-to").value = "";
+  document.getElementById("search-input") &&
+    (document.getElementById("search-input").value = "");
+  document.getElementById("category-filter") &&
+    (document.getElementById("category-filter").value = "");
+  document.getElementById("company-filter") &&
+    (document.getElementById("company-filter").value = "");
+  document.getElementById("card-filter") &&
+    (document.getElementById("card-filter").value = "");
+  document.getElementById("date-from") &&
+    (document.getElementById("date-from").value = "");
+  document.getElementById("date-to") &&
+    (document.getElementById("date-to").value = "");
 
   filteredTransactions = [...allTransactions];
   currentPage = 1;
@@ -323,23 +514,51 @@ function clearFilters() {
   renderTable();
 }
 
-// 📊 עדכון סיכום
+// 📊 עדכון סיכום - עם debug לבדיקת ההבדלים
 function updateSummary() {
   const count = filteredTransactions.length;
-  const total = filteredTransactions.reduce((sum, t) => sum + t.amount, 0);
+  const total = filteredTransactions.reduce(
+    (sum, t) => sum + (t.amount || 0),
+    0
+  );
   const avg = count > 0 ? total / count : 0;
 
-  document.getElementById("filtered-count").textContent =
-    count.toLocaleString();
-  document.getElementById(
-    "filtered-total"
-  ).textContent = `₪${total.toLocaleString()}`;
-  document.getElementById("filtered-avg").textContent = `₪${Math.round(
-    avg
-  ).toLocaleString()}`;
+  const currencySymbol = window.appConfig.getUIConfig().currencySymbol;
+
+  // 🔍 DEBUG: בדיקת ההבדלים
+  console.log(`📊 KPI Debug:`);
+  console.log(`   כל העסקאות (allTransactions): ${allTransactions.length}`);
+  console.log(
+    `   עסקאות מפולטרות (filteredTransactions): ${filteredTransactions.length}`
+  );
+  console.log(`   הצגה ב-KPI: ${count}`);
+
+  if (allTransactions.length !== filteredTransactions.length) {
+    console.log(
+      `⚠️  יש הבדל! פילטרים פעילים מסתירים ${
+        allTransactions.length - filteredTransactions.length
+      } עסקאות`
+    );
+  }
+
+  const countElement = document.getElementById("filtered-count");
+  const totalElement = document.getElementById("filtered-total");
+  const avgElement = document.getElementById("filtered-avg");
+
+  if (countElement) {
+    countElement.textContent = count.toLocaleString();
+    // הוסף tooltip עם המידע המלא
+    countElement.title = `מציג ${count} מתוך ${allTransactions.length} עסקאות`;
+  }
+  if (totalElement)
+    totalElement.textContent = `${currencySymbol}${total.toLocaleString()}`;
+  if (avgElement)
+    avgElement.textContent = `${currencySymbol}${Math.round(
+      avg
+    ).toLocaleString()}`;
 }
 
-// 🔄 מיון
+// 🔄 מיון (מעודכן לשדות החדשים)
 function handleSort(field) {
   if (sortField === field) {
     sortDirection = sortDirection === "asc" ? "desc" : "asc";
@@ -356,20 +575,23 @@ function handleSort(field) {
   const currentArrow = document.querySelector(
     `th[data-sort="${field}"] .sort-arrow`
   );
-  currentArrow.className = `sort-arrow ${sortDirection}`;
+  if (currentArrow) {
+    currentArrow.className = `sort-arrow ${sortDirection}`;
+  }
 
   // מיון הנתונים
   filteredTransactions.sort((a, b) => {
     let valueA, valueB;
 
     switch (field) {
+      case "date":
       case "transaction_date":
-        valueA = new Date(a.transaction_date);
-        valueB = new Date(b.transaction_date);
+        valueA = new Date(a.date);
+        valueB = new Date(b.date);
         break;
       case "amount":
-        valueA = a.amount;
-        valueB = b.amount;
+        valueA = a.amount || 0;
+        valueB = b.amount || 0;
         break;
       case "category":
         valueA = a.categories?.name || "";
@@ -389,44 +611,63 @@ function handleSort(field) {
   renderTable();
 }
 
-// 📋 רינדור טבלה
+// 📋 רינדור טבלה (מעודכן למבנה החדש)
 function renderTable() {
   const tbody = document.getElementById("transactions-tbody");
+  if (!tbody) return;
+
   const startIndex = pageSize === Infinity ? 0 : (currentPage - 1) * pageSize;
   const endIndex =
     pageSize === Infinity ? filteredTransactions.length : startIndex + pageSize;
   const pageTransactions = filteredTransactions.slice(startIndex, endIndex);
 
+  const currencySymbol = window.appConfig.getUIConfig().currencySymbol;
+
   tbody.innerHTML = pageTransactions
     .map(
       (transaction) => `
-        <tr>
-            <td>${formatDate(transaction.transaction_date)}</td>
-            <td>${transaction.business_name}</td>
-            <td style="font-weight: bold; color: #e74c3c;">₪${transaction.amount.toLocaleString()}</td>
+        <tr ${transaction.is_ai_categorized ? 'class="ai-categorized"' : ""}>
+            <td>${formatDate(transaction.date)}</td>
+            <td>
+              ${transaction.business_name}
+              ${
+                transaction.is_ai_categorized
+                  ? '<span class="ai-badge">🤖 AI</span>'
+                  : ""
+              }
+            </td>
+            <td style="font-weight: bold; color: #e74c3c;">
+              ${currencySymbol}${(transaction.amount || 0).toLocaleString()}
+              ${
+                transaction.originalamount !== transaction.chargedamount
+                  ? `<br><small style="color: #6c757d;">(מקורי: ${currencySymbol}${(
+                      transaction.originalamount || 0
+                    ).toLocaleString()})</small>`
+                  : ""
+              }
+            </td>
             <td>
                 <span class="category-tag" style="background-color: ${
                   transaction.categories?.color || "#6c757d"
                 }">
                     ${transaction.categories?.icon || "📂"} ${
-        transaction.categories?.name || "לא מוגדר"
+        transaction.categories?.name || transaction.category || "לא מוגדר"
       }
                 </span>
             </td>
-            <td>
-                <span class="company-tag company-${transaction.company}">
-                    ${transaction.company}
-                </span>
+            <td class="installment-info">
+                ${calculateInstallmentInfo(
+                  transaction.memo || "",
+                  transaction.date
+                )}
             </td>
             <td>${
-              transaction.card_last_four
-                ? `****${transaction.card_last_four}`
-                : "-"
+              transaction.cardlast4 ? `****${transaction.cardlast4}` : "-"
             }</td>
             <td>
-                <button class="action-btn" onclick="editCategory(${
-                  transaction.id
-                })">
+                <button class="action-btn" onclick="editCategory('${
+                  transaction.identifier
+                }', '${transaction.cardlast4}')">
                     ✏️ ערוך
                 </button>
             </td>
@@ -440,14 +681,15 @@ function renderTable() {
 
 // 📄 רינדור ניווט דפים
 function renderPagination() {
+  const pagination = document.getElementById("pagination");
+  if (!pagination) return;
+
   if (pageSize === Infinity) {
-    document.getElementById("pagination").innerHTML = "";
+    pagination.innerHTML = "";
     return;
   }
 
   const totalPages = Math.ceil(filteredTransactions.length / pageSize);
-  const pagination = document.getElementById("pagination");
-
   let paginationHTML = "";
 
   // כפתור הקודם
@@ -491,58 +733,83 @@ function changePage(page) {
   renderTable();
 }
 
-// ✏️ עריכת קטגוריה
-function editCategory(transactionId) {
-  const transaction = allTransactions.find((t) => t.id === transactionId);
+// ✏️ עריכת קטגוריה (מעודכן למפתח החדש)
+function editCategory(identifier, cardlast4) {
+  const transaction = allTransactions.find(
+    (t) => t.identifier === identifier && t.cardlast4 === cardlast4
+  );
   if (!transaction) return;
 
   // מילוי פרטי העסקה
-  document.getElementById("edit-business-name").textContent =
-    transaction.business_name;
-  document.getElementById(
-    "edit-amount"
-  ).textContent = `₪${transaction.amount.toLocaleString()}`;
+  const businessNameElement = document.getElementById("edit-business-name");
+  const amountElement = document.getElementById("edit-amount");
+
+  if (businessNameElement)
+    businessNameElement.textContent = transaction.business_name;
+  if (amountElement) {
+    const currencySymbol = window.appConfig.getUIConfig().currencySymbol;
+    amountElement.textContent = `${currencySymbol}${(
+      transaction.amount || 0
+    ).toLocaleString()}`;
+  }
 
   // מילוי רשימת קטגוריות
   const categorySelect = document.getElementById("edit-category-select");
-  categorySelect.innerHTML = categories
-    .map(
-      (cat) => `
-        <option value="${cat.id}" ${
-        cat.id === transaction.category_id ? "selected" : ""
-      }>
-            ${cat.icon} ${cat.name}
-        </option>
-    `
-    )
-    .join("");
+  if (categorySelect) {
+    categorySelect.innerHTML = categories
+      .map(
+        (cat) => `
+          <option value="${cat.id}" ${
+          cat.id === transaction.category_id ? "selected" : ""
+        }>
+              ${cat.icon} ${cat.name}
+          </option>
+      `
+      )
+      .join("");
 
-  // שמירת ID העסקה
-  categorySelect.dataset.transactionId = transactionId;
+    // שמירת מפתח העסקה
+    categorySelect.dataset.transactionIdentifier = identifier;
+    categorySelect.dataset.transactionCardlast4 = cardlast4;
+  }
 
   // הצגת המודל
-  document.getElementById("edit-modal").style.display = "flex";
+  const modal = document.getElementById("edit-modal");
+  if (modal) modal.style.display = "flex";
 }
 
-// 💾 שמירת עריכת קטגוריה
+// 💾 שמירת עריכת קטגוריה (מעודכן למפתח החדש)
 async function saveCategoryEdit() {
   const categorySelect = document.getElementById("edit-category-select");
-  const transactionId = categorySelect.dataset.transactionId;
+  if (!categorySelect) return;
+
+  const identifier = categorySelect.dataset.transactionIdentifier;
+  const cardlast4 = categorySelect.dataset.transactionCardlast4;
   const newCategoryId = categorySelect.value;
 
   try {
-    // עדכון במסד הנתונים
-    const { error } = await window.authModule.supabase
-      .from("transactions")
-      .update({ category_id: newCategoryId })
-      .eq("id", transactionId);
+    const transactionsTable = window.appConfig.getTableName("transactions");
+
+    // עדכון במסד הנתונים - עם המפתח המורכב
+    const { error } = await window.authModule
+      .supabase()
+      .from(transactionsTable)
+      .update({
+        category_id: newCategoryId,
+        is_ai_categorized: false, // מסמן שזה עכשיו ידני
+      })
+      .eq("identifier", identifier)
+      .eq("cardlast4", cardlast4);
 
     if (error) throw error;
 
     // עדכון בנתונים המקומיים
-    const transaction = allTransactions.find((t) => t.id == transactionId);
+    const transaction = allTransactions.find(
+      (t) => t.identifier === identifier && t.cardlast4 === cardlast4
+    );
     if (transaction) {
       transaction.category_id = newCategoryId;
+      transaction.is_ai_categorized = false;
       const newCategory = categories.find((c) => c.id == newCategoryId);
       transaction.categories = newCategory;
     }
@@ -560,19 +827,23 @@ async function saveCategoryEdit() {
 
 // ❌ סגירת מודל
 function closeModal() {
-  document.getElementById("edit-modal").style.display = "none";
+  const modal = document.getElementById("edit-modal");
+  if (modal) modal.style.display = "none";
 }
 
-// 📤 ייצוא לExcel
+// 📤 ייצוא לExcel (מעודכן)
 function exportToExcel() {
-  const headers = ["תאריך", "עסק", "סכום", "קטגוריה", "חברה", "כרטיס"];
+  const currencySymbol = window.appConfig.getUIConfig().currencySymbol;
+
+  const headers = ["תאריך", "עסק", "סכום", "קטגוריה", "תשלומים", "כרטיס", "AI"];
   const data = filteredTransactions.map((t) => [
-    formatDate(t.transaction_date),
+    formatDate(t.date),
     t.business_name,
-    t.amount,
-    t.categories?.name || "לא מוגדר",
-    t.company,
-    t.card_last_four ? `****${t.card_last_four}` : "-",
+    `${currencySymbol}${(t.amount || 0).toLocaleString()}`,
+    t.categories?.name || t.category || "לא מוגדר",
+    stripHTML(calculateInstallmentInfo(t.memo || "", t.date)),
+    t.cardlast4 ? `****${t.cardlast4}` : "-",
+    t.is_ai_categorized ? "כן" : "לא",
   ]);
 
   // יצירת CSV
@@ -591,15 +862,31 @@ function exportToExcel() {
 }
 
 // 🛠️ פונקציות עזר
+function stripHTML(html) {
+  const temp = document.createElement("div");
+  temp.innerHTML = html;
+  return temp.textContent || temp.innerText || "";
+}
+
+// 🛠️ פונקציות עזר
 function formatDate(dateString) {
+  if (!dateString) return "-";
   const date = new Date(dateString);
+  const format = window.appConfig.getUIConfig().dateFormat;
+
+  // פורמט בסיסי עברי
   return date.toLocaleDateString("he-IL");
 }
 
 function showError(message) {
-  document.getElementById("loading").style.display = "none";
-  document.getElementById("error-message").style.display = "block";
-  document.getElementById("error-message").textContent = message;
+  const loading = document.getElementById("loading");
+  const errorMessage = document.getElementById("error-message");
+
+  if (loading) loading.style.display = "none";
+  if (errorMessage) {
+    errorMessage.style.display = "block";
+    errorMessage.textContent = message;
+  }
 }
 
 // 🌐 חשיפת פונקציות לשימוש גלובלי
@@ -608,6 +895,8 @@ window.transactionsModule = {
   changePage,
   saveCategoryEdit,
   closeModal,
+  loadTransactions,
+  applyFilters,
 };
 
 // גם לחשוף פונקציות לשימוש ישיר ב-HTML
