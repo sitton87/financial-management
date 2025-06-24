@@ -58,7 +58,7 @@ const navbarModule = {
       { id: "transactions", label: "💳 עסקאות", href: "transactions.html" },
       { id: "categories", label: "🏷️ קטגוריות", href: "categories.html" },
       { id: "ai-insights", label: "🤖 תובנות AI", href: "ai-insights.html" },
-      { id: "training", label: "🎓 הדרכה", href: "training.html" },
+      { id: "training", label: "🧠 אימון AI", href: "training.html" },
     ];
 
     return navItems
@@ -81,7 +81,7 @@ const navbarModule = {
       { id: "transactions", label: "💳 עסקאות", href: "transactions.html" },
       { id: "categories", label: "🏷️ קטגוריות", href: "categories.html" },
       { id: "ai-insights", label: "🤖 תובנות AI", href: "ai-insights.html" },
-      { id: "training", label: "🎓 הדרכה", href: "training.html" },
+      { id: "training", label: "🧠 אימון AI", href: "training.html" },
     ];
 
     return navItems
@@ -125,7 +125,7 @@ const navbarModule = {
       transactions: "💳 רשימת עסקאות",
       categories: "🏷️ ניהול קטגוריות",
       "ai-insights": "🤖 תובנות בינה מלאכותית",
-      training: "🎓 מרכז הדרכה ולמידה",
+      training: "🧠 אימון AI",
     };
 
     return pageTitles[pageId] || "📊 מערכת ניהול פיננסי";
@@ -138,7 +138,7 @@ const navbarModule = {
       transactions: "כאן תוכל לראות את כל העסקאות שלך, לערוך ולנהל אותן",
       categories: "כאן תוכל לנהל את קטגוריות העסקאות ולהתאים אותן לצרכים שלך",
       "ai-insights": "כאן תוכל לקבל תובנות חכמות על הרגלי ההוצאה והחיסכון שלך",
-      training: "כאן תוכל ללמוד איך להשתמש במערכת ולקבל טיפים לניהול פיננסי",
+      training: "כאן תוכל לאמן את מערכת ה-AI לזהות ולסווג את העסקאות שלך",
     };
 
     return pageDescriptions[pageId] || "ברוך הבא למערכת ניהול פיננסי מתקדמת";

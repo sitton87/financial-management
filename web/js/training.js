@@ -86,7 +86,7 @@ function showMainApp() {
   if (headerContainer && window.navbarModule) {
     headerContainer.innerHTML = window.navbarModule.createHeader(
       "אימון ראשוני למערכת AI",
-      "אשר את כל העסקים כדי שה-AI ילמד את העדפותיך",
+      window.authModule.currentUser(),
       "training"
     );
   }

@@ -24,7 +24,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     if (isAuthorized) {
       console.log("🚀 הרשאה אושרה, מתחיל...");
       showMainApp();
-      await initAIPage();
+      await initAdvancedAIPage();
     } else {
       showAccessDenied();
     }

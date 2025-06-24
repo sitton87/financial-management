@@ -62,7 +62,7 @@ def get_ai_stats():
         
         # עסקאות מהשבוע האחרון
         week_ago = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
-        recent_transactions = ai.db.supabase.table('transactions').select('*').gte('transaction_date', week_ago).execute()
+        recent_transactions = ai.db.supabase.table('transactions').select('*').gte('date', week_ago).execute()
         processed_count = len(recent_transactions.data) if recent_transactions.data else 0
         
         # חישוב דיוק (דמה - נשפר בהמשך)
@@ -97,7 +97,7 @@ def get_ai_suggestions():
         for idx, suggestion in enumerate(real_suggestions[:5]):  # מקסימום 5
             suggestions.append({
                 'id': idx + 1,
-                'business': suggestion.get('business_name', 'לא ידוע'),
+                'business': suggestion.get('description', 'לא ידוע'),
                 'current': suggestion.get('current_category', 'לא מסווג'),
                 'recommended': suggestion.get('suggested_category', 'שונות'),
                 'confidence': suggestion.get('confidence', 0),
@@ -111,10 +111,6 @@ def get_ai_suggestions():
         print(f"שגיאה בקבלת הצעות: {e}")
         # במקרה של שגיאה, נחזיר רשימה ריקה
         return jsonify([])
-        
-    except Exception as e:
-        print(f"שגיאה בקבלת הצעות: {e}")
-        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/new-businesses', methods=['GET'])
 def get_new_businesses():
@@ -126,25 +122,21 @@ def get_new_businesses():
     except Exception as e:
         print(f"שגיאה בקבלת עסקים חדשים: {e}")
         return jsonify([])
-        
-    except Exception as e:
-        print(f"שגיאה בקבלת עסקים חדשים: {e}")
-        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/accept-suggestion', methods=['POST'])
 def accept_suggestion():
     """אישור הצעת שיפור"""
     try:
         data = request.json
-        business_name = data.get('business')
+        description = data.get('business')
         new_category = data.get('recommended')
         
-        print(f"✅ מאשר הצעה: {business_name} → {new_category}")
+        print(f"✅ מאשר הצעה: {description} → {new_category}")
         
         # כאן נוסיף לוגיקה לעדכון בפועל
         # לעכשיו רק מחזירים הצלחה
         
-        return jsonify({'success': True, 'message': f'הצעה אושרה עבור {business_name}'})
+        return jsonify({'success': True, 'message': f'הצעה אושרה עבור {description}'})
         
     except Exception as e:
         print(f"שגיאה באישור הצעה: {e}")
@@ -224,9 +216,9 @@ def get_training_data():
         
         # שליפת כל העסקים עם פרטים מלאים
         result = db.supabase.table('transactions').select('''
-            business_name,
+            description,
             categories (id, name, color),
-            amount
+            chargedamount
         ''').execute()
         
         if not result.data:
@@ -236,7 +228,7 @@ def get_training_data():
         business_stats = {}
         
         for transaction in result.data:
-            business_name = transaction['business_name']
+            business_name = transaction['description']
             if not business_name:
                 continue
                 
@@ -255,7 +247,7 @@ def get_training_data():
             
             # עדכון סטטיסטיקות
             business_stats[business_name]['transaction_count'] += 1
-            business_stats[business_name]['total_amount'] += transaction.get('amount', 0)
+            business_stats[business_name]['total_amount'] += transaction.get('chargedamount', 0)
         
         # חישוב ממוצעים ומיון
         training_data = []
@@ -278,29 +270,29 @@ def approve_business_training():
     """אישור עסק באימון ראשוני"""
     try:
         data = request.json
-        business_name = data.get('business_name')
+        description = data.get('business_name')
         category_id = data.get('category_id')
         
-        if not business_name or not category_id:
+        if not description or not category_id:
             return jsonify({'error': 'חסרים נתונים'}), 400
             
-        print(f"✅ מאשר עסק באימון: {business_name} → קטגוריה {category_id}")
+        print(f"✅ מאשר עסק באימון: {description} → קטגוריה {category_id}")
         
         # עדכון כל העסקאות של העסק הזה
         result = db.supabase.table('transactions').update({
             'category_id': category_id
-        }).eq('business_name', business_name).execute()
+        }).eq('description', description).execute()
         
         updated_count = len(result.data) if result.data else 0
         
         # עדכון רשימת העסקים המוכרים
         if hasattr(db, 'known_businesses_cache'):
-            normalized_name = db.normalize_business_name(business_name)
+            normalized_name = db.normalize_business_name(description)
             db.known_businesses_cache[normalized_name] = category_id
         
         return jsonify({
             'success': True, 
-            'message': f'עסק {business_name} אושר',
+            'message': f'עסק {description} אושר',
             'updated_transactions': updated_count
         })
         
@@ -344,23 +336,22 @@ def complete_training():
 if __name__ == '__main__':
     print("🚀 מפעיל שרת AI API...")
     
-if init_ai_system():
-    print("🌐 שרת רץ על: http://localhost:5000")
-    print("🧠 API endpoints זמינים:")
-    print("  GET  /api/ai-stats")
-    print("  GET  /api/ai-suggestions") 
-    print("  GET  /api/new-businesses")
-    print("  GET  /api/training-data")
-    print("  POST /api/approve-business-training")
-    print("  GET  /api/training-status")
-    print("  POST /api/complete-training")
-    print("  POST /api/accept-suggestion")
-    print("  POST /api/reject-suggestion")
-    print("  POST /api/approve-business")
-    print("  POST /api/retrain")
-    print("  GET  /health")
-    
-    app.run(debug=True, port=5000)
-else:
-    print("❌ שרת לא הופעל - בעיה באתחול AI")
+    if init_ai_system():
+        print("🌐 שרת רץ על: http://localhost:5000")
+        print("🧠 API endpoints זמינים:")
+        print("  GET  /api/ai-stats")
+        print("  GET  /api/ai-suggestions") 
+        print("  GET  /api/new-businesses")
+        print("  GET  /api/training-data")
+        print("  POST /api/approve-business-training")
+        print("  GET  /api/training-status")
+        print("  POST /api/complete-training")
+        print("  POST /api/accept-suggestion")
+        print("  POST /api/reject-suggestion")
+        print("  POST /api/approve-business")
+        print("  POST /api/retrain")
+        print("  GET  /health")
         
+        app.run(debug=True, port=5000)
+    else:
+        print("❌ שרת לא הופעל - בעיה באתחול AI")
